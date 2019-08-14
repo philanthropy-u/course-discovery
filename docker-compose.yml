@@ -1,58 +1,40 @@
-version: "2"
+version: "3"
 
 services:
-  db:
-    image: mysql:5.6
-    container_name: db
+  
+  mysql:
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
     environment:
       MYSQL_ROOT_PASSWORD: ""
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_USER: "discov001"
-      MYSQL_PASSWORD: "password"
-      MYSQL_DATABASE: "discovery"
-    ports:
-      - "3306:3306"
+    image: mysql:5.6
     volumes:
-      - ./.dev/volumes/db:/var/lib/mysql
+      - mysql_data:/var/lib/mysql
+    ports:
+      - "${OPENEDX_ELASTICSEARCH_PORT}:${OPENEDX_ELASTICSEARCH_PORT}"
 
-  es:
-    image: elasticsearch:1.5.2
-    container_name: es
+  elasticsearch:
+    image: edxops/elasticsearch:devstack
     volumes:
-      - ./.dev/volumes/es/data:/usr/share/elasticsearch/data
-      - ./.dev/volumes/es/logs:/usr/share/elasticsearch/logs
-      - ./.dev/volumes/es/plugins:/usr/share/elasticsearch/plugins
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+      - elasticsearch_data:/usr/share/elasticsearch/data
+      - elasticsearch_data:/usr/share/elasticsearch/logs
 
   memcached:
     image: memcached:1.4.24
-    container_name: memcached
 
-  course-discovery:
-    # Uncomment this line to use the official course-discovery base image
-    image: edxops/discovery:latest
-
-    # Uncomment the next two lines to build from a local configuration repo
-    # build: ../configuration/docker/build/discovery/
-
-    container_name: course-discovery
-    volumes:
-      - .:/edx/app/discovery/discovery
-      - /edx/app/discovery/discovery/node_modules
-      - ./course_discovery/media:/edx/var/discovery/media
-      - ./course_discovery/assets:/edx/var/discovery/staticfiles
-    command: /edx/app/discovery/devstack.sh start
+  discovery:
+    command: bash -c 'source /edx/app/discovery/discovery_env && while true; do python /edx/app/discovery/discovery/manage.py runserver 0.0.0.0:18381; sleep 2; done'
     depends_on:
-      - "db"
-      - "es"
-      - "memcached"
+      - mysql
+      - elasticsearch
+      - memcached
+    stdin_open: true
+    tty: true
     environment:
-      TEST_ELASTICSEARCH_URL: "http://es:9200"
+      TEST_ELASTICSEARCH_URL: "http://elasticsearch:${OPENEDX_ELASTICSEARCH_PORT}"
       ENABLE_DJANGO_TOOLBAR: 1
+    image: edxops/discovery:${OPENEDX_IMAGE_VERSION}
     ports:
-      - "18381:18381"
-      - "8381:8381"
-      - "48381:48381"
+      - "${OPENEDX_DISCOVERY_PORT}:${OPENEDX_DISCOVERY_PORT}"
+    volumes:
+      - discovery_assets:/edx/var/discovery/
