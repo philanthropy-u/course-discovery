@@ -349,7 +349,6 @@ class AggregateSearchViewSetTests(mixins.SerializationMixin, mixins.LoginMixin, 
             # data the same as the data coming out of search.
             json.loads(JSONRenderer().render(self.serialize_course_search(course_run.course)).decode('utf-8')),
         ]
-        self.maxDiff = None
         self.assertCountEqual(response_data['results'], expected)
 
     def test_empty_query(self):
