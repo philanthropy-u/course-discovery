@@ -18,13 +18,13 @@ from django.utils.functional import cached_property
 from django.utils.translation import ugettext_lazy as _
 from django_extensions.db.fields import AutoSlugField
 from django_extensions.db.models import TimeStampedModel
+from dynamic_filenames import FilePattern
 from haystack.query import SearchQuerySet
 from parler.models import TranslatableModel, TranslatedFieldsModel
 from simple_history.models import HistoricalRecords
 from solo.models import SingletonModel
 from sortedm2m.fields import SortedManyToManyField
 from stdimage.models import StdImageField
-from stdimage.utils import UploadToAutoSlug
 from taggit_autosuggest.managers import TaggableManager
 
 from course_discovery.apps.core.models import Currency, Partner
@@ -309,7 +309,7 @@ class ProgramType(TimeStampedModel):
                               'of the course counted toward the completion of the program.'),
     )
     logo_image = StdImageField(
-        upload_to=UploadToAutoSlug(populate_from='name', path='media/program_types/logo_images'),
+        upload_to=FilePattern(filename_pattern='media/program_types/logo_images/{instance.name:.40slug}{ext}'),
         blank=True,
         null=True,
         variations={
