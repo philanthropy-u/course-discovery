@@ -293,7 +293,7 @@ class UploadToFieldNamePath(FilePattern):
     def __init__(self, populate_from, **kwargs):
         self.populate_from = populate_from
         kwargs['populate_from'] = populate_from
-        super(UploadToFieldNamePath, self).__init__(populate_from=populate_from, **kwargs)
+        super(UploadToFieldNamePath, self).__init__(**kwargs)
 
     def __call__(self, instance, filename):
         field_value = getattr(instance, self.populate_from)
