@@ -98,3 +98,4 @@ webpack-stats.json
 
 # Emacs
 *~
+package-lock.json
