@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 import os
 
 from django.contrib.sites.models import Site
@@ -15,7 +13,7 @@ class CreateSitesAndPartnersTests(TestCase):
     """ Test the create_sites_and_partners command """
 
     def setUp(self):
-        super(CreateSitesAndPartnersTests, self).setUp()
+        super().setUp()
         self.dns_name = "dummy-dns"
         self.theme_path = os.path.dirname(__file__)
 
@@ -35,25 +33,19 @@ class CreateSitesAndPartnersTests(TestCase):
                 site_name = site.name
                 self.assertEqual(
                     site.domain,
-                    "discovery-{site}-{dns_name}.example.com".format(site=site_name, dns_name=self.dns_name)
+                    f"discovery-{site_name}-{self.dns_name}.example.com"
                 )
                 partner = Partner.objects.get(site=site)
 
                 self.assertEqual(partner.short_code, site_name)
                 self.assertEqual(partner.name, "dummy")
-                self.assertEqual(partner.oidc_key, "key-dummy")
-                self.assertEqual(partner.oidc_secret, "secret-{dns_name}".format(dns_name=self.dns_name))
-                self.assertEqual(
-                    partner.oidc_url_root,
-                    "https://dummy-{dns_name}.example.com/oauth2".format(dns_name=self.dns_name)
-                )
                 self.assertEqual(
                     partner.courses_api_url,
-                    "https://dummy-{dns_name}.example.com/api/courses/v1/".format(dns_name=self.dns_name)
+                    f"https://dummy-{self.dns_name}.example.com/api/courses/v1/"
                 )
                 self.assertEqual(
                     partner.ecommerce_api_url,
-                    "https://ecommerce-dummy-{dns_name}.example.com/".format(dns_name=self.dns_name)
+                    f"https://ecommerce-dummy-{self.dns_name}.example.com/"
                 )
                 self.assertEqual(
                     partner.organizations_api_url,

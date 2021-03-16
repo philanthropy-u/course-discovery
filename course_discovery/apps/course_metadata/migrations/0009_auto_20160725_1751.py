@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import django.db.models.deletion
 from django.db import migrations, models
 
@@ -16,7 +13,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='course',
             name='partner',
-            field=models.ForeignKey(null=True, to='core.Partner'),
+            field=models.ForeignKey(null=True, to='core.Partner', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='historicalcourse',
@@ -31,11 +28,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='organization',
             name='partner',
-            field=models.ForeignKey(null=True, to='core.Partner'),
+            field=models.ForeignKey(null=True, to='core.Partner', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='program',
             name='partner',
-            field=models.ForeignKey(null=True, to='core.Partner'),
+            field=models.ForeignKey(null=True, to='core.Partner', on_delete=django.db.models.deletion.CASCADE),
         ),
     ]

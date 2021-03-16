@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import django.db.models.deletion
 import django_extensions.db.fields
 import sortedm2m.fields
@@ -41,7 +38,7 @@ class Migration(migrations.Migration):
                 ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(verbose_name='modified', auto_now=True)),
                 ('relation_type', models.CharField(max_length=63, choices=[('owner', 'Owner'), ('sponsor', 'Sponsor')])),
-                ('course', models.ForeignKey(to='course_metadata.Course')),
+                ('course', models.ForeignKey(to='course_metadata.Course', on_delete=django.db.models.deletion.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -62,7 +59,7 @@ class Migration(migrations.Migration):
                 ('min_effort', models.PositiveSmallIntegerField(help_text='Estimated minimum number of hours per week needed to complete a course run.', blank=True, null=True)),
                 ('max_effort', models.PositiveSmallIntegerField(help_text='Estimated maximum number of hours per week needed to complete a course run.', blank=True, null=True)),
                 ('pacing_type', models.CharField(db_index=True, blank=True, max_length=255, null=True, choices=[('self_paced', 'Self-paced'), ('instructor_paced', 'Instructor-paced')])),
-                ('course', models.ForeignKey(related_name='course_runs', to='course_metadata.Course')),
+                ('course', models.ForeignKey(related_name='course_runs', to='course_metadata.Course', on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'ordering': ('-modified', '-created'),
@@ -236,7 +233,7 @@ class Migration(migrations.Migration):
                 ('name', models.CharField(blank=True, max_length=255, null=True)),
                 ('description', models.TextField(blank=True, null=True)),
                 ('homepage_url', models.URLField(blank=True, max_length=255, null=True)),
-                ('logo_image', models.ForeignKey(to='course_metadata.Image', blank=True, null=True)),
+                ('logo_image', models.ForeignKey(to='course_metadata.Image', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'ordering': ('-modified', '-created'),
@@ -255,7 +252,7 @@ class Migration(migrations.Migration):
                 ('title', models.CharField(blank=True, max_length=255, null=True)),
                 ('bio', models.TextField(blank=True, null=True)),
                 ('organizations', models.ManyToManyField(blank=True, to='course_metadata.Organization')),
-                ('profile_image', models.ForeignKey(to='course_metadata.Image', blank=True, null=True)),
+                ('profile_image', models.ForeignKey(to='course_metadata.Image', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'verbose_name_plural': 'People',
@@ -284,8 +281,8 @@ class Migration(migrations.Migration):
                 ('upgrade_deadline', models.DateTimeField(blank=True, null=True)),
                 ('credit_provider', models.CharField(blank=True, max_length=255, null=True)),
                 ('credit_hours', models.IntegerField(blank=True, null=True)),
-                ('course_run', models.ForeignKey(related_name='seats', to='course_metadata.CourseRun')),
-                ('currency', models.ForeignKey(to='core.Currency')),
+                ('course_run', models.ForeignKey(related_name='seats', to='course_metadata.CourseRun', on_delete=django.db.models.deletion.CASCADE)),
+                ('currency', models.ForeignKey(to='core.Currency', on_delete=django.db.models.deletion.CASCADE)),
             ],
         ),
         migrations.CreateModel(
@@ -307,7 +304,7 @@ class Migration(migrations.Migration):
                 ('created', django_extensions.db.fields.CreationDateTimeField(auto_now_add=True, verbose_name='created')),
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(verbose_name='modified', auto_now=True)),
                 ('value', models.CharField(max_length=255)),
-                ('parent', models.ForeignKey(to='course_metadata.SyllabusItem', blank=True, related_name='children', null=True)),
+                ('parent', models.ForeignKey(to='course_metadata.SyllabusItem', blank=True, related_name='children', null=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -321,7 +318,7 @@ class Migration(migrations.Migration):
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(verbose_name='modified', auto_now=True)),
                 ('src', models.URLField(max_length=255, unique=True)),
                 ('description', models.CharField(blank=True, max_length=255, null=True)),
-                ('image', models.ForeignKey(to='course_metadata.Image', blank=True, null=True)),
+                ('image', models.ForeignKey(to='course_metadata.Image', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'abstract': False,
@@ -375,7 +372,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='courserun',
             name='image',
-            field=models.ForeignKey(default=None, to='course_metadata.Image', blank=True, null=True),
+            field=models.ForeignKey(default=None, to='course_metadata.Image', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='courserun',
@@ -385,7 +382,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='courserun',
             name='language',
-            field=models.ForeignKey(to='ietf_language_tags.LanguageTag', blank=True, null=True),
+            field=models.ForeignKey(to='ietf_language_tags.LanguageTag', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='courserun',
@@ -395,7 +392,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='courserun',
             name='syllabus',
-            field=models.ForeignKey(default=None, to='course_metadata.SyllabusItem', blank=True, null=True),
+            field=models.ForeignKey(default=None, to='course_metadata.SyllabusItem', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='courserun',
@@ -405,12 +402,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='courserun',
             name='video',
-            field=models.ForeignKey(default=None, to='course_metadata.Video', blank=True, null=True),
+            field=models.ForeignKey(default=None, to='course_metadata.Video', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='courseorganization',
             name='organization',
-            field=models.ForeignKey(to='course_metadata.Organization'),
+            field=models.ForeignKey(to='course_metadata.Organization', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='course',
@@ -420,12 +417,12 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='course',
             name='image',
-            field=models.ForeignKey(default=None, to='course_metadata.Image', blank=True, null=True),
+            field=models.ForeignKey(default=None, to='course_metadata.Image', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='course',
             name='level_type',
-            field=models.ForeignKey(default=None, to='course_metadata.LevelType', blank=True, null=True),
+            field=models.ForeignKey(default=None, to='course_metadata.LevelType', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='course',
@@ -445,18 +442,18 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='course',
             name='video',
-            field=models.ForeignKey(default=None, to='course_metadata.Video', blank=True, null=True),
+            field=models.ForeignKey(default=None, to='course_metadata.Video', blank=True, null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterUniqueTogether(
             name='seat',
-            unique_together=set([('course_run', 'type', 'currency', 'credit_provider')]),
+            unique_together={('course_run', 'type', 'currency', 'credit_provider')},
         ),
         migrations.AlterUniqueTogether(
             name='courseorganization',
-            unique_together=set([('course', 'organization', 'relation_type')]),
+            unique_together={('course', 'organization', 'relation_type')},
         ),
         migrations.AlterIndexTogether(
             name='courseorganization',
-            index_together=set([('course', 'relation_type')]),
+            index_together={('course', 'relation_type')},
         ),
     ]

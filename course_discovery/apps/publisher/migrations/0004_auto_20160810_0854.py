@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import django.db.models.deletion
 import django_extensions.db.fields
 import django_fsm
@@ -52,7 +49,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='courserun',
             name='state',
-            field=models.ForeignKey(blank=True, to='publisher.State', null=True),
+            field=models.ForeignKey(blank=True, to='publisher.State', null=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='historicalcourserun',

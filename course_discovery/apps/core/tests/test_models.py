@@ -12,7 +12,7 @@ class UserTests(TestCase):
     """ User model tests. """
 
     def setUp(self):
-        super(UserTests, self).setUp()
+        super().setUp()
         self.user = UserFactory()
 
     def test_access_token_without_social_auth(self):
@@ -38,7 +38,7 @@ class UserTests(TestCase):
         first_name = "Jerry"
         last_name = "Seinfeld"
         user = UserFactory(full_name=None, first_name=first_name, last_name=last_name)
-        expected = "{first_name} {last_name}".format(first_name=first_name, last_name=last_name)
+        expected = f"{first_name} {last_name}"
         self.assertEqual(user.get_full_name(), expected)
 
         user = UserFactory(full_name=full_name, first_name=first_name, last_name=last_name)
@@ -54,7 +54,7 @@ class CurrencyTests(TestCase):
         code = 'USD'
         name = 'U.S. Dollar'
         instance = Currency(code=code, name=name)
-        self.assertEqual(str(instance), '{code} - {name}'.format(code=code, name=name))
+        self.assertEqual(str(instance), f'{code} - {name}')
 
 
 @ddt.ddt
@@ -75,14 +75,14 @@ class PartnerTests(TestCase):
     )
     def test_has_marketing_site(self, marketing_site_url_root, expected):
         partner = PartnerFactory(marketing_site_url_root=marketing_site_url_root)
-        self.assertEqual(partner.has_marketing_site, expected)  # pylint: disable=no-member
+        self.assertEqual(partner.has_marketing_site, expected)
 
     @responses.activate
     def test_access_token(self):
         """ Verify the property retrieves, and caches, an access token from the OAuth 2.0 provider. """
         token = 'abc123'
         partner = PartnerFactory()
-        url = '{root}/access_token'.format(root=partner.oidc_url_root)
+        url = f'{partner.oauth2_provider_url}/access_token'
         body = {
             'access_token': token,
             'expires_in': 3600,

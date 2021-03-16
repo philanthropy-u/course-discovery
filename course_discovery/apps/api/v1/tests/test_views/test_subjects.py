@@ -9,7 +9,7 @@ class SubjectViewSetTests(SerializationMixin, APITestCase):
     list_path = reverse('api:v1:subject-list')
 
     def setUp(self):
-        super(SubjectViewSetTests, self).setUp()
+        super().setUp()
         self.user = UserFactory(is_staff=True, is_superuser=True)
         self.client.login(username=self.user.username, password=USER_PASSWORD)
 
@@ -20,7 +20,7 @@ class SubjectViewSetTests(SerializationMixin, APITestCase):
 
         self.client.logout()
         response = self.client.get(self.list_path)
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     def test_retrieve(self):
         """ The request should return details for a single subject. """

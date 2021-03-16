@@ -1,8 +1,5 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import stdimage.models
-import stdimage.utils
+from course_discovery.apps.course_metadata.utils import UploadToFieldNamePath
 from django.db import migrations
 
 
@@ -16,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='program',
             name='banner_image',
-            field=stdimage.models.StdImageField(upload_to=stdimage.utils.UploadToAutoSlugClassNameDir('uuid', path='/media/programs/banner_images'), null=True, blank=True),
+            field=stdimage.models.StdImageField(upload_to=UploadToFieldNamePath('uuid', path='/media/programs/banner_images'), null=True, blank=True),
         ),
     ]

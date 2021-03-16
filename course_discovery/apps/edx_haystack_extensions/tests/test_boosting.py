@@ -1,10 +1,10 @@
 import datetime
+from unittest.mock import patch
 
 import pytest
 import pytz
 from dateutil.relativedelta import relativedelta
 from haystack.query import SearchQuerySet
-from mock import patch
 
 from course_discovery.apps.course_metadata.models import CourseRun, Program, ProgramType
 from course_discovery.apps.course_metadata.tests.factories import CourseRunFactory, ProgramFactory
@@ -38,8 +38,8 @@ class TestSearchBoosting:
     @pytest.mark.parametrize('program_type', ['MicroMasters', 'Professional Certificate'])
     def test_program_type_boosting(self, program_type):
         """Verify MicroMasters and Professional Certificate are boosted over XSeries."""
-        ProgramFactory(type=ProgramType.objects.get(name='XSeries'))
-        test_record = ProgramFactory(type=ProgramType.objects.get(name=program_type))
+        ProgramFactory(type=ProgramType.objects.get(translations__name_t='XSeries'))
+        test_record = ProgramFactory(type=ProgramType.objects.get(translations__name_t=program_type))
 
         search_results = SearchQuerySet().models(Program).all()
         assert len(search_results) == 2
@@ -55,7 +55,6 @@ class TestSearchBoosting:
         search_results = SearchQuerySet().models(CourseRun).all()
         assert len(search_results) == 2
         assert search_results[0].score > search_results[1].score
-        # pylint: disable=no-member
         assert int(test_record.start.timestamp()) == int(search_results[0].start.timestamp())
 
     @pytest.mark.parametrize(

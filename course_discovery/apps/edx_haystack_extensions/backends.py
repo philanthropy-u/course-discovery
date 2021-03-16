@@ -3,7 +3,7 @@ from haystack.backends.elasticsearch_backend import ElasticsearchSearchBackend, 
 from course_discovery.apps.edx_haystack_extensions.elasticsearch_boost_config import get_elasticsearch_boost_config
 
 
-class SimpleQuerySearchBackendMixin(object):
+class SimpleQuerySearchBackendMixin:
     """
     Mixin for simplifying Elasticsearch queries.
 
@@ -28,7 +28,7 @@ class SimpleQuerySearchBackendMixin(object):
           }
         """
         query_string = args[0]
-        search_kwargs = super(SimpleQuerySearchBackendMixin, self).build_search_kwargs(*args, **kwargs)
+        search_kwargs = super().build_search_kwargs(*args, **kwargs)
 
         simple_query = {
             'query': query_string,
@@ -54,7 +54,7 @@ class SimpleQuerySearchBackendMixin(object):
         return search_kwargs
 
 
-class NonClearingSearchBackendMixin(object):
+class NonClearingSearchBackendMixin:
     """
     Mixin that prevents indexes from being cleared.
 

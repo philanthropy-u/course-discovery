@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import uuid
 
+import django.db.models.deletion
 import django_extensions.db.fields
 import sortedm2m.fields
 from django.db import migrations, models
@@ -32,11 +30,11 @@ class Migration(migrations.Migration):
         migrations.RunPython(delete_partnerless_courses, reverse_code=migrations.RunPython.noop),
         migrations.AlterUniqueTogether(
             name='courseorganization',
-            unique_together=set([]),
+            unique_together=set(),
         ),
         migrations.AlterIndexTogether(
             name='courseorganization',
-            index_together=set([]),
+            index_together=set(),
         ),
         migrations.RemoveField(
             model_name='courseorganization',
@@ -162,7 +160,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='course',
             name='partner',
-            field=models.ForeignKey(to='core.Partner'),
+            field=models.ForeignKey(to='core.Partner', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AlterField(
             model_name='historicalcourse',
@@ -192,7 +190,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='course',
-            unique_together=set([('partner', 'key'), ('partner', 'uuid')]),
+            unique_together={('partner', 'key'), ('partner', 'uuid')},
         ),
         migrations.RemoveField(
             model_name='course',

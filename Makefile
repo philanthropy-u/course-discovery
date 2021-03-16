@@ -1,11 +1,13 @@
-.DEFAULT_GOAL := test
+.DEFAULT_GOAL := help
 NODE_BIN=$(CURDIR)/node_modules/.bin
+TOX := tox
 
-.PHONY: accept clean clean_static compile_translations detect_changed_source_translations dummy_translations extract_translations \
-	fake_translations help html_coverage migrate open-devstack production-requirements pull_translations quality requirements.js \
-	requirements start-devstack static stop-devstack test validate check_translations_up_to_date docs  static.dev static.watch
+.PHONY: accept clean clean_static check_keywords detect_changed_source_translations extract_translations \
+	help html_coverage migrate open-devstack production-requirements pull_translations quality requirements.js \
+	requirements.python requirements start-devstack static stop-devstack test docs static.dev static.watch
 
 include .travis/docker.mk
+
 
 # Generates a help message. Borrowed from https://github.com/pydanny/cookiecutter-djangopackage.
 help: ## Display this help message
@@ -15,7 +17,6 @@ help: ## Display this help message
 static: ## Gather all static assets for production
 	$(NODE_BIN)/webpack --config webpack.config.js --display-error-details --progress --optimize-minimize
 	python manage.py collectstatic -v 0 --noinput
-	python manage.py compress -v3 --force
 
 static.dev:
 	$(NODE_BIN)/webpack --config webpack.config.js --display-error-details --progress
@@ -34,24 +35,36 @@ requirements.js: ## Install JS requirements for local development
 	npm install
 	$(NODE_BIN)/bower install --allow-root
 
-requirements: requirements.js ## Install Python and JS requirements for local development
-	pip install -r requirements/local.txt
+requirements.python: ## Install Python requirements for local development.
+	pip install -r requirements/local.txt -r requirements/django.txt
+
+requirements: requirements.js requirements.python ## Install Python and JS requirements for local development
 
 production-requirements: ## Install Python and JS requirements for production
 	pip install -r requirements.txt
 	npm install --production
 	$(NODE_BIN)/bower install --allow-root --production
 
+upgrade:
+	pip install -q -r requirements/pip_tools.txt
+	pip-compile --upgrade -o requirements/pip_tools.txt requirements/pip_tools.in
+	pip-compile --upgrade -o requirements/docs.txt requirements/docs.in
+	pip-compile --upgrade -o requirements/local.txt requirements/local.in
+	pip-compile --upgrade -o requirements/production.txt requirements/production.in
+	# Let tox control the Django version for tests
+	grep -e "^django==" requirements/local.txt > requirements/django.txt
+	sed -i.tmp '/^[dD]jango==/d' requirements/local.txt
+	rm -rf requirements/local.txt.tmp
+	chmod a+rw requirements/*.txt
+
 test: clean ## Run tests and generate coverage report
 	## The node_modules .bin directory is added to ensure we have access to Geckodriver.
-	PATH="$(NODE_BIN):$(PATH)" pytest --ds=course_discovery.settings.test --durations=25
-	coverage combine
-	coverage report
+	PATH="$(NODE_BIN):$(PATH)" $(TOX)
 
-quality: ## Run pep8 and Pylint
+quality: ## Run pycodestyle and pylint
 	isort --check-only --diff --recursive acceptance_tests/ course_discovery/
-	pep8 --config=.pep8 acceptance_tests course_discovery *.py
-	pylint --rcfile=pylintrc acceptance_tests course_discovery *.py
+	pycodestyle --config=.pycodestyle acceptance_tests course_discovery *.py
+	PYTHONPATH=./course_discovery/apps pylint --rcfile=pylintrc acceptance_tests course_discovery *.py
 
 validate: quality test ## Run tests and quality checks
 
@@ -62,23 +75,20 @@ migrate: ## Apply database migrations
 html_coverage: ## Generate and view HTML coverage report
 	coverage html && open htmlcov/index.html
 
-extract_translations: ## Extract strings to be translated, outputting .mo files
+# This Make target should not be removed since it is relied on by a Jenkins job (`edx-internal/tools-edx-jenkins/translation-jobs.yml`), using `ecommerce-scripts/transifex`.
+extract_translations: ## Extract strings to be translated, outputting .po and .mo files
 	# NOTE: We need PYTHONPATH defined to avoid ImportError(s) on Travis CI.
 	cd course_discovery && PYTHONPATH="..:${PYTHONPATH}" django-admin.py makemessages -l en -v1 --ignore="assets/*" --ignore="static/bower_components/*" --ignore="static/build/*" -d django
 	cd course_discovery && PYTHONPATH="..:${PYTHONPATH}" django-admin.py makemessages -l en -v1 --ignore="assets/*" --ignore="static/bower_components/*" --ignore="static/build/*" -d djangojs
+	cd course_discovery && PYTHONPATH="..:${PYTHONPATH}" i18n_tool dummy
+	cd course_discovery && PYTHONPATH="..:${PYTHONPATH}" django-admin.py compilemessages
 
-dummy_translations: ## Generate dummy translation (.po) files
-	cd course_discovery && i18n_tool dummy
-
-compile_translations: ## Compile translation files, outputting .po files for each supported language
-	python manage.py compilemessages
-
-fake_translations: extract_translations dummy_translations compile_translations ## Generate and compile dummy translation files
-
+# This Make target should not be removed since it is relied on by a Jenkins job (`edx-internal/tools-edx-jenkins/translation-jobs.yml`), using `ecommerce-scripts/transifex`.
 pull_translations: ## Pull translations from Transifex
 	tx pull -af --mode reviewed --minimum-perc=1
 
-push_translations: ## push source translation files (.po) from Transifex
+# This Make target should not be removed since it is relied on by a Jenkins job (`edx-internal/tools-edx-jenkins/translation-jobs.yml`), using `ecommerce-scripts/transifex`.
+push_translations: ## Push source translation files (.po) to Transifex
 	tx push -s
 
 start-devstack: ## Run a local development copy of the server
@@ -94,13 +104,33 @@ open-devstack: ## Open a shell on the server started by start-devstack
 accept: ## Run acceptance tests
 	nosetests --with-ignore-docstrings -v acceptance_tests
 
+# This Make target should not be removed since it is relied on by a Jenkins job (`edx-internal/tools-edx-jenkins/translation-jobs.yml`), using `ecommerce-scripts/transifex`.
 detect_changed_source_translations: ## Check if translation files are up-to-date
 	cd course_discovery && i18n_tool changed
 
-validate_translations: ## Check if translation files are valid
-	cd course_discovery && i18n_tool validate -v -ca
-
-check_translations_up_to_date: fake_translations detect_changed_source_translations ## Install fake translations and check if translation files are up-to-date
-
 docs:
 	cd docs && make html
+
+check_keywords: ## Scan the Django models in all installed apps in this project for restricted field names
+	python manage.py check_reserved_keywords --override_file db_keyword_overrides.yml
+
+docker_build:
+	docker build . -f Dockerfile --target app -t openedx/discovery
+	docker build . -f Dockerfile --target devstack -t openedx/discovery:latest-devstack
+	docker build . -f Dockerfile --target newrelic -t openedx/discovery:latest-newrelic
+
+docker_tag: docker_build
+	docker tag openedx/discovery openedx/discovery:${GITHUB_SHA}
+	docker tag openedx/discovery:latest-devstack openedx/discovery:${GITHUB_SHA}-devstack
+	docker tag openedx/discovery:latest-newrelic openedx/discovery:${GITHUB_SHA}-newrelic
+
+docker_auth:
+	echo "$$DOCKERHUB_PASSWORD" | docker login -u "$$DOCKERHUB_USERNAME" --password-stdin
+
+docker_push: docker_tag docker_auth ## push to docker hub
+	docker push 'openedx/discovery:latest'
+	docker push "openedx/discovery:${GITHUB_SHA}"
+	docker push 'openedx/discovery:latest-devstack'
+	docker push "openedx/discovery:${GITHUB_SHA}-devstack"
+	docker push 'openedx/discovery:latest-newrelic'
+	docker push "openedx/discovery:${GITHUB_SHA}-newrelic"

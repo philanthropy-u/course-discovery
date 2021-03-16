@@ -1,5 +1,3 @@
-from __future__ import unicode_literals
-
 from ddt import data, ddt
 from django.core.management import CommandError, call_command
 from django.test import TestCase
@@ -23,9 +21,6 @@ class CreateOrUpdatePartnerCommandTests(TestCase):
     marketing_site_url_root = 'https://www.fake.org/'
     marketing_site_api_username = 'marketing-username'
     marketing_site_api_password = 'marketing-password'
-    oidc_url_root = 'https://oidc.fake.org/'
-    oidc_key = 'oidc-key'
-    oidc_secret = 'oidc-secret'
 
     def _check_partner(self, partner):
         self.assertEqual(partner.site.domain, self.site_domain)
@@ -39,9 +34,6 @@ class CreateOrUpdatePartnerCommandTests(TestCase):
         self.assertEqual(partner.marketing_site_url_root, self.marketing_site_url_root)
         self.assertEqual(partner.marketing_site_api_username, self.marketing_site_api_username)
         self.assertEqual(partner.marketing_site_api_password, self.marketing_site_api_password)
-        self.assertEqual(partner.oidc_url_root, self.oidc_url_root)
-        self.assertEqual(partner.oidc_key, self.oidc_key)
-        self.assertEqual(partner.oidc_secret, self.oidc_secret)
 
     def _call_command(self, **kwargs):
         """
@@ -66,9 +58,6 @@ class CreateOrUpdatePartnerCommandTests(TestCase):
             'marketing_site_url_root': 'marketing-site-url-root',
             'marketing_site_api_username': 'marketing-site-api-username',
             'marketing_site_api_password': 'marketing-site-api-password',
-            'oidc_url_root': 'oidc-url-root',
-            'oidc_key': 'oidc-key',
-            'oidc_secret': 'oidc-secret',
         }
 
         for kwarg, value in kwargs.items():
@@ -91,9 +80,6 @@ class CreateOrUpdatePartnerCommandTests(TestCase):
             marketing_site_url_root=self.marketing_site_url_root,
             marketing_site_api_username=self.marketing_site_api_username,
             marketing_site_api_password=self.marketing_site_api_password,
-            oidc_url_root=self.oidc_url_root,
-            oidc_key=self.oidc_key,
-            oidc_secret=self.oidc_secret,
         )
 
     def test_create_partner(self):
@@ -123,9 +109,6 @@ class CreateOrUpdatePartnerCommandTests(TestCase):
         self.marketing_site_url_root = 'https://www.updated.org/'
         self.marketing_site_api_username = 'updated-username'
         self.marketing_site_api_password = 'updated-password'
-        self.oidc_url_root = 'https://oidc.updated.org/'
-        self.oidc_key = 'updated-key'
-        self.oidc_secret = 'updated-secret'
 
         self._call_command(
             site_id=site.id,
@@ -140,9 +123,6 @@ class CreateOrUpdatePartnerCommandTests(TestCase):
             marketing_site_url_root=self.marketing_site_url_root,
             marketing_site_api_username=self.marketing_site_api_username,
             marketing_site_api_password=self.marketing_site_api_password,
-            oidc_url_root=self.oidc_url_root,
-            oidc_key=self.oidc_key,
-            oidc_secret=self.oidc_secret,
         )
 
         partner = Partner.objects.get(short_code=self.partner_code)

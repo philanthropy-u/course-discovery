@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import django.db.models.deletion
 import stdimage.models
 from django.conf import settings
@@ -34,7 +31,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='course',
             name='team_admin',
-            field=models.ForeignKey(related_name='team_admin_user', null=True, to=settings.AUTH_USER_MODEL, blank=True),
+            field=models.ForeignKey(related_name='team_admin_user', null=True, to=settings.AUTH_USER_MODEL, blank=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='courserun',
@@ -44,7 +41,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='courserun',
             name='video_language',
-            field=models.ForeignKey(related_name='video_language', null=True, to='ietf_language_tags.LanguageTag', blank=True),
+            field=models.ForeignKey(related_name='video_language', null=True, to='ietf_language_tags.LanguageTag', blank=True, on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='historicalcourse',

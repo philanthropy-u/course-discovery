@@ -15,8 +15,8 @@ class FuzzyDomain(BaseFuzzyAttribute):
         tld = FuzzyChoice(('com', 'net', 'org', 'biz', 'pizza', 'coffee', 'diamonds', 'fail', 'win', 'wtf',))
 
         return "{subdomain}.{domain}.{tld}".format(
-            subdomain=subdomain.fuzz(),
-            domain=domain.fuzz(),
+            subdomain=subdomain.fuzz().lower(),
+            domain=domain.fuzz().lower(),
             tld=tld.fuzz()
         )
 
@@ -45,8 +45,6 @@ class FuzzyURL(BaseFuzzyAttribute):
 
 def mock_api_callback(url, data, results_key=True, pagination=False):
     def request_callback(request):
-        # pylint: disable=redefined-builtin
-
         count = len(data)
         next_url = None
         previous_url = None
@@ -59,11 +57,11 @@ def mock_api_callback(url, data, results_key=True, pagination=False):
 
         if (page * page_size) < count:
             next_page = page + 1
-            next_url = '{}?page={}'.format(url, next_page)
+            next_url = f'{url}?page={next_page}'
 
         if page > 1:
             previous_page = page - 1
-            previous_url = '{}?page={}'.format(url, previous_page)
+            previous_url = f'{url}?page={previous_page}'
 
         body = {
             'count': count,
@@ -87,7 +85,7 @@ def mock_api_callback(url, data, results_key=True, pagination=False):
 
 
 def mock_jpeg_callback():
-    def request_callback(request):  # pylint: disable=unused-argument
+    def request_callback(request):
         image_stream = make_image_stream(2120, 1192)
 
         return 200, {}, image_stream.getvalue()
@@ -111,7 +109,7 @@ class MockLoggingHandler(logging.Handler):
             'error': [],
             'critical': [],
         }
-        super(MockLoggingHandler, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def emit(self, record):
         """

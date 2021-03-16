@@ -30,14 +30,13 @@ class TestApiDocs(APITestCase):
         Verify that unauthenticated clients are redirected.
         """
         response = self.client.get(self.path)
-
         assert response.status_code == 302
 
 
 @ddt.ddt
 class ApiDocsPermissionDeniedHandlerTests(TestCase):
     def setUp(self):
-        super(ApiDocsPermissionDeniedHandlerTests, self).setUp()
+        super().setUp()
         self.request_path = '/'
         self.request = RequestFactory().get(self.request_path)
 

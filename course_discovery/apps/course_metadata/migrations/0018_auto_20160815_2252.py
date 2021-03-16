@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import uuid
 
 import django.db.models.deletion
@@ -30,7 +27,7 @@ class Migration(migrations.Migration):
                 ('modified', django_extensions.db.fields.ModificationDateTimeField(auto_now=True, verbose_name='modified')),
                 ('title', models.CharField(max_length=255)),
                 ('organization_override', models.CharField(max_length=255, blank=True, null=True)),
-                ('organization', models.ForeignKey(null=True, to='course_metadata.Organization', blank=True)),
+                ('organization', models.ForeignKey(null=True, to='course_metadata.Organization', blank=True, on_delete=django.db.models.deletion.CASCADE)),
             ],
             options={
                 'ordering': ('-modified', '-created'),
@@ -107,7 +104,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='person',
             name='partner',
-            field=models.ForeignKey(null=True, to='core.Partner'),
+            field=models.ForeignKey(null=True, to='core.Partner', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.AddField(
             model_name='person',
@@ -126,12 +123,12 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='person',
-            unique_together=set([('partner', 'uuid')]),
+            unique_together={('partner', 'uuid')},
         ),
         migrations.AddField(
             model_name='position',
             name='person',
-            field=models.OneToOneField(to='course_metadata.Person'),
+            field=models.OneToOneField(to='course_metadata.Person', on_delete=django.db.models.deletion.CASCADE),
         ),
         migrations.RemoveField(
             model_name='person',

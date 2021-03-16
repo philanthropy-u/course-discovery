@@ -13,9 +13,9 @@ logger = logging.getLogger(__name__)
 
 
 @pytest.mark.usefixtures('haystack_default_connection')
-class ElasticsearchTestMixin(object):
+class ElasticsearchTestMixin:
     def setUp(self):
-        super(ElasticsearchTestMixin, self).setUp()
+        super().setUp()
         self.index = settings.HAYSTACK_CONNECTIONS['default']['INDEX_NAME']
         connection = haystack_connections['default']
         self.es = connection.get_backend().conn
@@ -44,7 +44,7 @@ class ElasticsearchTestMixin(object):
         index.update_object(person)
 
 
-class LMSAPIClientMixin(object):
+class LMSAPIClientMixin:
     def mock_api_access_request(self, lms_url, user, status=200, api_access_request_overrides=None):
         """
         Mock the api access requests endpoint response of the LMS.
@@ -79,7 +79,7 @@ class LMSAPIClientMixin(object):
 
         responses.add(
             responses.GET,
-            lms_url.rstrip('/') + '/api-admin/api/v1/api_access_request/?user__username={}'.format(user.username),
+            lms_url.rstrip('/') + f'/api-admin/api/v1/api_access_request/?user__username={user.username}',
             body=json.dumps(data),
             content_type='application/json',
             status=status
@@ -101,7 +101,7 @@ class LMSAPIClientMixin(object):
 
         responses.add(
             responses.GET,
-            lms_url.rstrip('/') + '/api-admin/api/v1/api_access_request/?user__username={}'.format(user.username),
+            lms_url.rstrip('/') + f'/api-admin/api/v1/api_access_request/?user__username={user.username}',
             body=json.dumps(data),
             content_type='application/json',
             status=status
@@ -115,7 +115,7 @@ class LMSAPIClientMixin(object):
 
         responses.add(
             responses.GET,
-            lms_url.rstrip('/') + '/api-admin/api/v1/api_access_request/?user__username={}'.format(user.username),
+            lms_url.rstrip('/') + f'/api-admin/api/v1/api_access_request/?user__username={user.username}',
             body=json.dumps(data),
             content_type='application/json',
             status=status

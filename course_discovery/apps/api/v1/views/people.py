@@ -2,29 +2,32 @@ import logging
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.permissions import DjangoModelPermissionsOrAnonReadOnly
 from rest_framework.response import Response
 
 from course_discovery.apps.api import filters, serializers
+from course_discovery.apps.api.cache import CompressedCacheResponseMixin
 from course_discovery.apps.api.pagination import PageNumberPagination
-from course_discovery.apps.api.utils import get_query_param
+from course_discovery.apps.api.serializers import MetadataWithRelatedChoices
 from course_discovery.apps.course_metadata.exceptions import MarketingSiteAPIClientException, PersonToMarketingException
 
 logger = logging.getLogger(__name__)
 
 
-# pylint: disable=no-member
-class PersonViewSet(viewsets.ModelViewSet):
+# pylint: disable=useless-super-delegation
+class PersonViewSet(CompressedCacheResponseMixin, viewsets.ModelViewSet):
     """ PersonSerializer resource. """
 
     filter_backends = (DjangoFilterBackend,)
-    filter_class = filters.PersonFilter
+    filterset_class = filters.PersonFilter
     lookup_field = 'uuid'
     lookup_value_regex = '[0-9a-f-]+'
-    permission_classes = (DjangoModelPermissions,)
+    permission_classes = (DjangoModelPermissionsOrAnonReadOnly,)
     queryset = serializers.PersonSerializer.prefetch_queryset()
     serializer_class = serializers.PersonSerializer
     pagination_class = PageNumberPagination
+    metadata_class = MetadataWithRelatedChoices
+    metadata_related_choices_whitelist = ('organization',)
 
     def create(self, request, *args, **kwargs):
         """
@@ -56,7 +59,7 @@ class PersonViewSet(viewsets.ModelViewSet):
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
-    def update(self, request, *args, **kwargs):  # pylint: disable=unused-argument
+    def update(self, request, *args, **kwargs):
         """
         Updates a person in discovery and the corresponding person node in drupal
         """
@@ -92,19 +95,21 @@ class PersonViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         """ Retrieve a list of all people. """
-        return super(PersonViewSet, self).list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         """ Retrieve details for a person. """
-        return super(PersonViewSet, self).retrieve(request, *args, **kwargs)
+        return super().retrieve(request, *args, **kwargs)
 
     def get_queryset(self):
         # Only include people from the current request's site
-        return self.queryset.filter(partner=self.request.site.partner)
+        queryset = self.queryset.filter(partner=self.request.site.partner)
+        org_keys = self.request.query_params.getlist('org', None)
 
-    def get_serializer_context(self, *args, **kwargs):
-        context = super().get_serializer_context(*args, **kwargs)
-        query_params = ['include_course_runs_staffed', 'include_publisher_course_runs_staffed']
-        for query_param in query_params:
-            context[query_param] = get_query_param(self.request, query_param)
-        return context
+        if org_keys:
+            # We are pulling the people who are part of course runs belonging to the given organizations.
+            # This blank order_by is there to offset the default ordering on people since
+            # we don't care about the order in which they are returned.
+            queryset = queryset.filter(courses_staffed__course__authoring_organizations__key__in=org_keys).order_by()
+
+        return queryset
